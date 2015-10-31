@@ -2,6 +2,7 @@ package com.leugenel.stickfigure;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -64,7 +65,7 @@ public class MainActivity extends Activity {
 
             drawView.invalidate();
 
-            fCatcher = new FigureCatcher(drawView, mDisplayWidth, mDisplayHeight);
+            fCatcher = new FigureCatcher(drawView.getDrawingCache(true));
         }
     }
 
@@ -102,7 +103,9 @@ public class MainActivity extends Activity {
 
         public DrawView(Context context) {
             super(context);
-            paint.setColor(Color.BLACK);
+            this.setDrawingCacheEnabled(true);
+            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(Color.RED);
         }
 
         @Override
