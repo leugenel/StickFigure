@@ -2,10 +2,11 @@ package com.leugenel.stickfigure;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
@@ -13,12 +14,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.RelativeLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends Activity {
 
-
+    //Need to adjust the cursor view to the x and y
+    private final int MAGIC_SHIFT = 70;
     // Display dimensions
     private int mDisplayWidth, mDisplayHeight;
     DrawView drawView;
@@ -77,11 +81,15 @@ public class MainActivity extends Activity {
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
                 Log.i("onTouchEvent", "Action was DOWN");
+//                drawView.addCircle(new Circle(event.getX(), event.getY()-70, 10));
+//                drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_MOVE) :
                 Log.i("onTouchEvent", "Action was MOVE");
-                Log.i("onTouchEvent ", "X: "+event.getX()+" Y:"+event.getY());
-                fCatcher.isCatched(event.getX(), event.getY());
+                Log.i("onTouchEvent ", "X: " + event.getX() + " Y:" + event.getY());
+                fCatcher.isCatches(event.getX(), event.getY()-70);
+                drawView.addRect(fCatcher.getAroundRect());
+                drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
                 Log.i("onTouchEvent", "Action was UP");
@@ -98,22 +106,64 @@ public class MainActivity extends Activity {
         }
     }
 
+    /***************************** Class DrawView **************************/
+
     public class DrawView extends View {
         Paint paint = new Paint();
+        List<Rect> aroundRect = new ArrayList<Rect>();
+        //List<Circle> aroundCircle = new ArrayList<Circle>();
+
 
         public DrawView(Context context) {
             super(context);
             this.setDrawingCacheEnabled(true);
-            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setColor(Color.RED);
+//            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
+//            paint.setColor(Color.RED);
         }
 
         @Override
         public void onDraw(Canvas canvas) {
             Log.i("onDraw", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
+            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(Color.RED);
             canvas.drawLine(0, 0, mDisplayWidth, mDisplayHeight, paint);
+            paint.setStrokeWidth(5); //setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(Color.GREEN);
+            if(aroundRect.size()>0) {
+                for (Rect rect : aroundRect) {
+                    canvas.drawRect(rect, paint);
+                }
+            }
+//            paint.setColor(Color.BLUE);
+//            if(aroundCircle.size()>0) {
+//                for (Circle circle : aroundCircle) {
+//                    canvas.drawCircle(circle.x, circle.y, circle.radius, paint);
+//                }
+//            }
         }
 
+        public void addRect(Rect rect){
+            aroundRect.add(rect);
+        }
+//        public void addCircle(Circle circle){
+//            aroundCircle.add(circle);
+//        }
     }
 
+    /***************************** Class Circle **************************/
+//    public class Circle {
+//        float x,y;
+//        int radius;
+//
+//        public Circle(float x, float y, int radius){
+//            this.x = x;
+//            this.y =y;
+//            this.radius = radius;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return x + ", " + y + "r:"+ radius;
+//        }
+//    }
 }

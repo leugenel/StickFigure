@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.view.View;
@@ -13,12 +14,12 @@ import android.widget.ImageView;
  * Created by eugenel on 10/27/2015.
  */
 public class FigureCatcher {
-    private final int DIMENSION = 5;
+    private final int DIMENSION = 20;
     private int mainPixel;
     private int xPos;
     private int yPos;
     private Bitmap bitmap;
-    private Color pointColor;
+
 
     public FigureCatcher(Bitmap bitmap){
         if(bitmap==null) {
@@ -28,19 +29,28 @@ public class FigureCatcher {
     }
 
 
-    public Boolean isCatched(float x, float y){
+    public Boolean isCatches(float x, float y){
         xPos=Math.round(x);
-        Log.i("isCatched", "xPos float: "+x+" x Rounded:"+xPos);
+        Log.i("isCatches", "xPos float: "+x+" x Rounded:"+xPos);
         yPos=Math.round(y);
-        Log.i("isCatched", "yPos float: "+y+" y Rounded:"+yPos);
+        Log.i("isCatches", "yPos float: "+y+" y Rounded:"+yPos);
 
         if( xPos>=bitmap.getWidth() || yPos>=bitmap.getHeight() || xPos<=0 || yPos<=0) {
-            Log.i("isCatched", "Out of boundaries");
+            Log.i("isCatches", "Out of boundaries");
             return false;
         }
 
         mainPixel = bitmap.getPixel(xPos, yPos);
         return isInDimension();
+    }
+
+    public Rect getAroundRect(){
+        Rect around = new Rect();
+        around.left = xPos-DIMENSION;
+        around.top = yPos-DIMENSION;
+        around.right = xPos+DIMENSION;
+        around.bottom = yPos+DIMENSION;
+        return around;
     }
 
     private Boolean isInDimension(){
