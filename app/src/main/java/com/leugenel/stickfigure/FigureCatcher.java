@@ -1,23 +1,15 @@
 package com.leugenel.stickfigure;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
 
 /**
  * Created by eugenel on 10/27/2015.
  */
 public class FigureCatcher {
     private final int DIMENSION = 20;
-    private int mainPixel;
-    private int xPos;
-    private int yPos;
     private Bitmap bitmap;
 
 
@@ -30,9 +22,9 @@ public class FigureCatcher {
 
 
     public Boolean isCatches(float x, float y){
-        xPos=Math.round(x);
+        int xPos=Math.round(x);
         Log.i("isCatches", "xPos float: "+x+" x Rounded:"+xPos);
-        yPos=Math.round(y);
+        int yPos=Math.round(y);
         Log.i("isCatches", "yPos float: "+y+" y Rounded:"+yPos);
 
         if( xPos>=bitmap.getWidth() || yPos>=bitmap.getHeight() || xPos<=0 || yPos<=0) {
@@ -40,29 +32,30 @@ public class FigureCatcher {
             return false;
         }
 
-        mainPixel = bitmap.getPixel(xPos, yPos);
-        return isInDimension();
+        return isInDimension(xPos, yPos);
     }
 
-    public Rect getAroundRect(){
+    public Rect getAroundRect(float x, float y){
+        int xPos=Math.round(x);
+        int yPos=Math.round(y);
+
         Rect around = new Rect();
         around.left = xPos-DIMENSION;
         around.top = yPos-DIMENSION;
         around.right = xPos+DIMENSION;
         around.bottom = yPos+DIMENSION;
+
         return around;
     }
 
-    private Boolean isInDimension(){
+    private Boolean isInDimension(int xPos, int yPos){
         int pixel;
-        Log.i("isInDimension"," MAIN PIXEL Red:"+ Color.red(mainPixel)+" Blue:"+Color.blue(mainPixel)+" Green:"+Color.green(mainPixel));
         for (int x = xPos-DIMENSION; x<xPos+DIMENSION; x++ ){
             for (int y = yPos-DIMENSION; y<yPos+DIMENSION; y++ ){
                 if( x>=bitmap.getWidth() || y>=bitmap.getHeight() || x<=0 || y<=0)
                     continue;
-                pixel = bitmap.getPixel(x, y);
-                if(!isTheSameColor(Color.red(pixel), Color.blue(pixel), Color.green(pixel))) {
-                    Log.i("isInDimension YES"," Red:"+ Color.red(pixel)+" Blue:"+Color.blue(pixel)+" Green:"+Color.green(pixel));
+                if(!isTheSameColor(x,y, xPos, yPos)) {
+                    Log.i("isInDimension", "isInDimension YES");
                     return true;
                 }
             }
@@ -71,9 +64,49 @@ public class FigureCatcher {
         return false;
     }
 
-    private Boolean isTheSameColor(int red, int blue, int green) {
-        return (Color.red(mainPixel)==red)&&(Color.blue(mainPixel)==blue)&&(Color.green(mainPixel) == green);
+    private Boolean isInDimension(int xPos, int yPos, int userColor){
+        int pixel;
+        for (int x = xPos-DIMENSION; x<xPos+DIMENSION; x++ ){
+            for (int y = yPos-DIMENSION; y<yPos+DIMENSION; y++ ){
+                if( x>=bitmap.getWidth() || y>=bitmap.getHeight() || x<=0 || y<=0)
+                    continue;
+                if(isTheSameColor(x,y, userColor)) {
+                    Log.i("isInDimension", "isInDimension YES");
+                    return true;
+                }
+            }
+        }
+        Log.i("isInDimension", "NO");
+        return false;
     }
 
 
+    private Boolean isTheSameColor(int x, int y, int comparex, int comparey) {
+        return bitmap.getPixel(x, y) == bitmap.getPixel(comparex, comparey);
+    }
+
+    private Boolean isTheSameColor(int x, int y, int userColor) {
+        return bitmap.getPixel(x, y) == userColor;
+    }
+
+    public Boolean isDone(int figColor, int userColor, Bitmap bitmap){
+        int pixel;
+        this.bitmap=bitmap;
+        if(bitmap.getWidth()==0 || bitmap.getHeight()==0){
+            Log.i("isDone", "Bitmap size is 0");
+            return false;
+        }
+        for (int x = 1; x<bitmap.getWidth(); x++ ) {
+            for (int y = 1; y < bitmap.getHeight(); y++) {
+                pixel = bitmap.getPixel(x, y);
+                if(pixel==figColor){ //User not filled the pixel
+                    if(!isInDimension(x, y, userColor)){
+                        Log.i("isDone", "NOT done x="+x+" y="+y);
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }

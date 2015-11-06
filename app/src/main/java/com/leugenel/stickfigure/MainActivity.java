@@ -2,13 +2,15 @@ package com.leugenel.stickfigure;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,11 +69,33 @@ public class MainActivity extends Activity {
             mDisplayHeight = drawView.getHeight();
             Log.i("onWindowFocusChanged", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
 
+
             drawView.invalidate();
 
             fCatcher = new FigureCatcher(drawView.getDrawingCache(true));
         }
     }
+
+    public static Bitmap getBitmapFromView(View view) {
+        //Define a bitmap with the same size as the view
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
+        //Bind a canvas to it
+        Canvas canvas = new Canvas(returnedBitmap);
+        //Get the view's background
+        Drawable bgDrawable =view.getBackground();
+        if (bgDrawable!=null)
+            //has background drawable, then draw it on the canvas
+            bgDrawable.draw(canvas);
+        else
+            //does not have background drawable, then draw white background on the canvas
+            canvas.drawColor(Color.WHITE);
+        // draw the view on the canvas
+        view.draw(canvas);
+        //return the bitmap
+        return returnedBitmap;
+    }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
@@ -81,18 +105,28 @@ public class MainActivity extends Activity {
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
                 Log.i("onTouchEvent", "Action was DOWN");
-//                drawView.addCircle(new Circle(event.getX(), event.getY()-70, 10));
-//                drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_MOVE) :
                 Log.i("onTouchEvent", "Action was MOVE");
                 Log.i("onTouchEvent ", "X: " + event.getX() + " Y:" + event.getY());
-                fCatcher.isCatches(event.getX(), event.getY()-70);
-                drawView.addRect(fCatcher.getAroundRect());
+                //fCatcher.isCatches(event.getX(), event.getY()-MAGIC_SHIFT);
+                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY()-MAGIC_SHIFT));
                 drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
                 Log.i("onTouchEvent", "Action was UP");
+
+                if(fCatcher.isDone(Color.RED, Color.GREEN, getBitmapFromView(drawView))){
+//                    new AlertDialog.Builder(MainActivity.this)
+//                            .setTitle("You win")
+//                            .setMessage("Yes you win")
+//                            .setCancelable(true)
+//                            .show();
+                    Log.i("onTouchEvent", "YOU WIN!!!");
+                }
+                else {
+                    drawView.aroundRect.clear();
+                }
                 return true;
             case (MotionEvent.ACTION_CANCEL) :
                 Log.i("onTouchEvent", "Action was CANCEL");
@@ -111,18 +145,20 @@ public class MainActivity extends Activity {
     public class DrawView extends View {
         Paint paint = new Paint();
         List<Rect> aroundRect = new ArrayList<Rect>();
-        //List<Circle> aroundCircle = new ArrayList<Circle>();
+
 
 
         public DrawView(Context context) {
             super(context);
+
             this.setDrawingCacheEnabled(true);
-//            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
-//            paint.setColor(Color.RED);
         }
+
+
 
         @Override
         public void onDraw(Canvas canvas) {
+
             Log.i("onDraw", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
             paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
             paint.setColor(Color.RED);
@@ -134,36 +170,13 @@ public class MainActivity extends Activity {
                     canvas.drawRect(rect, paint);
                 }
             }
-//            paint.setColor(Color.BLUE);
-//            if(aroundCircle.size()>0) {
-//                for (Circle circle : aroundCircle) {
-//                    canvas.drawCircle(circle.x, circle.y, circle.radius, paint);
-//                }
-//            }
-        }
+       }
+
 
         public void addRect(Rect rect){
             aroundRect.add(rect);
         }
-//        public void addCircle(Circle circle){
-//            aroundCircle.add(circle);
-//        }
+
     }
 
-    /***************************** Class Circle **************************/
-//    public class Circle {
-//        float x,y;
-//        int radius;
-//
-//        public Circle(float x, float y, int radius){
-//            this.x = x;
-//            this.y =y;
-//            this.radius = radius;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return x + ", " + y + "r:"+ radius;
-//        }
-//    }
 }
