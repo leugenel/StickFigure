@@ -39,6 +39,7 @@ public class FigureCatcher {
         int xPos=Math.round(x);
         int yPos=Math.round(y);
 
+        Log.i("getAroundrect", "Float x:"+x+" y:"+y+" INT x:"+xPos+" y:"+yPos);
         Rect around = new Rect();
         around.left = xPos-DIMENSION;
         around.top = yPos-DIMENSION;
@@ -92,7 +93,7 @@ public class FigureCatcher {
     public Boolean isDone(int figColor, int userColor, Bitmap bitmap){
         int pixel;
         this.bitmap=bitmap;
-        if(bitmap.getWidth()==0 || bitmap.getHeight()==0){
+        if(bitmap==null || bitmap.getWidth()==0 || bitmap.getHeight()==0){
             Log.i("isDone", "Bitmap size is 0");
             return false;
         }

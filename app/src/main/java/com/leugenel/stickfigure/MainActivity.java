@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,12 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity /*Activity*/ {
 
     //Need to adjust the cursor view to the x and y
-    private final int MAGIC_SHIFT = 70;
-    // Display dimensions
-    private int mDisplayWidth, mDisplayHeight;
+    private final int MAGIC_SHIFT = 285;
     DrawView drawView;
     FigureCatcher fCatcher;
 
@@ -65,14 +64,13 @@ public class MainActivity extends Activity {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             // Get the size of the display so this View knows where borders are
-            mDisplayWidth = drawView.getWidth();
-            mDisplayHeight = drawView.getHeight();
-            Log.i("onWindowFocusChanged", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
-
+            //mDisplayWidth = drawView.getWidth();
+            //mDisplayHeight = drawView.getHeight();
+            //Log.i("onWindowFocusChanged", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
 
             drawView.invalidate();
 
-            fCatcher = new FigureCatcher(drawView.getDrawingCache(true));
+            fCatcher = new FigureCatcher(getBitmapFromView(drawView));
         }
     }
 
@@ -110,7 +108,7 @@ public class MainActivity extends Activity {
                 Log.i("onTouchEvent", "Action was MOVE");
                 Log.i("onTouchEvent ", "X: " + event.getX() + " Y:" + event.getY());
                 //fCatcher.isCatches(event.getX(), event.getY()-MAGIC_SHIFT);
-                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY()-MAGIC_SHIFT));
+                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getRawY()/*-MAGIC_SHIFT*/));
                 drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
@@ -147,22 +145,17 @@ public class MainActivity extends Activity {
         List<Rect> aroundRect = new ArrayList<Rect>();
 
 
-
         public DrawView(Context context) {
             super(context);
-
-            this.setDrawingCacheEnabled(true);
         }
-
-
 
         @Override
         public void onDraw(Canvas canvas) {
 
-            Log.i("onDraw", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
+            Log.i("onDraw", "mDisplayWidth:" + getWidth() + " mDisplayHeight:" + getHeight());
             paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
             paint.setColor(Color.RED);
-            canvas.drawLine(0, 0, mDisplayWidth, mDisplayHeight, paint);
+            canvas.drawLine(0, 0, getWidth(), getHeight(), paint);
             paint.setStrokeWidth(5); //setStyle(Paint.Style.FILL_AND_STROKE);
             paint.setColor(Color.GREEN);
             if(aroundRect.size()>0) {
@@ -171,7 +164,6 @@ public class MainActivity extends Activity {
                 }
             }
        }
-
 
         public void addRect(Rect rect){
             aroundRect.add(rect);
