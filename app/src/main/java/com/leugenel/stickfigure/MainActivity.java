@@ -1,40 +1,65 @@
 package com.leugenel.stickfigure;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class MainActivity extends AppCompatActivity /*Activity*/ {
+public class MainActivity extends AppCompatActivity  /*Activity*/ {
 
     //Need to adjust the cursor view to the x and y
-    private final int MAGIC_SHIFT = 285;
+    private final int MAGIC_SHIFT = 64;
     DrawView drawView;
+    RelativeLayout rl;
     FigureCatcher fCatcher;
+    int actionBarHeight=0;
+    float scale =0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("onCreate", "STARTED");
+
+        setContentView(R.layout.activity_main);
         drawView = new DrawView(this);
-        drawView.setBackgroundColor(Color.WHITE);
-        setContentView(drawView);
+
+        drawView.setBackgroundResource(R.drawable.line);
+        scale = getResources().getDisplayMetrics().density;
+
+        Log.i("onCreate", "scale:" + scale + " horizontal_margin:" +
+                (int) (getResources().getDimension(R.dimen.activity_horizontal_margin)) +
+                "vertical_margin: " + (int) (getResources().getDimension(R.dimen.activity_vertical_margin)));
+
+        RelativeLayout.LayoutParams params =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                                                RelativeLayout.LayoutParams.MATCH_PARENT);
+
+        rl = (RelativeLayout)findViewById(R.id.frame);
+        rl.addView(drawView, params);
+
     }
 
     @Override
@@ -62,19 +87,24 @@ public class MainActivity extends AppCompatActivity /*Activity*/ {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+
+        Log.i("onWindowFocusChanged", "RL Width:" + rl.getWidth() + " RL Height:" + rl.getHeight());
+
         if (hasFocus) {
-            // Get the size of the display so this View knows where borders are
-            //mDisplayWidth = drawView.getWidth();
-            //mDisplayHeight = drawView.getHeight();
-            //Log.i("onWindowFocusChanged", "mDisplayWidth:" + mDisplayWidth + " mDisplayHeight:" + mDisplayHeight);
-
             drawView.invalidate();
-
             fCatcher = new FigureCatcher(getBitmapFromView(drawView));
+        }
+
+        //Get Action bar height to calculate Y
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(R.attr.actionBarSize, tv, true))
+        {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+            Log.i("onWindowFocusChanged ", "actionBarHeight: " +actionBarHeight);
         }
     }
 
-    public static Bitmap getBitmapFromView(View view) {
+    public static Bitmap getBitmapFromView(ImageView view) {
         //Define a bitmap with the same size as the view
         Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
         //Bind a canvas to it
@@ -87,13 +117,12 @@ public class MainActivity extends AppCompatActivity /*Activity*/ {
         else
             //does not have background drawable, then draw white background on the canvas
             canvas.drawColor(Color.WHITE);
+
         // draw the view on the canvas
         view.draw(canvas);
         //return the bitmap
         return returnedBitmap;
     }
-
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
@@ -106,15 +135,15 @@ public class MainActivity extends AppCompatActivity /*Activity*/ {
                 return true;
             case (MotionEvent.ACTION_MOVE) :
                 Log.i("onTouchEvent", "Action was MOVE");
-                Log.i("onTouchEvent ", "X: " + event.getX() + " Y:" + event.getY());
+                Log.i("onTouchEvent ", "Regular X: " + event.getX() + " Y:" + event.getY());
                 //fCatcher.isCatches(event.getX(), event.getY()-MAGIC_SHIFT);
-                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getRawY()/*-MAGIC_SHIFT*/));
+                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY()  - MAGIC_SHIFT - actionBarHeight));
                 drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
                 Log.i("onTouchEvent", "Action was UP");
 
-                if(fCatcher.isDone(Color.RED, Color.GREEN, getBitmapFromView(drawView))){
+                if(fCatcher.isDone(Color.BLUE, Color.GREEN, getBitmapFromView(drawView))){
 //                    new AlertDialog.Builder(MainActivity.this)
 //                            .setTitle("You win")
 //                            .setMessage("Yes you win")
@@ -140,22 +169,17 @@ public class MainActivity extends AppCompatActivity /*Activity*/ {
 
     /***************************** Class DrawView **************************/
 
-    public class DrawView extends View {
+    public class DrawView extends ImageView {
         Paint paint = new Paint();
         List<Rect> aroundRect = new ArrayList<Rect>();
 
-
         public DrawView(Context context) {
-            super(context);
+           super(context);
         }
 
         @Override
         public void onDraw(Canvas canvas) {
 
-            Log.i("onDraw", "mDisplayWidth:" + getWidth() + " mDisplayHeight:" + getHeight());
-            paint.setStrokeWidth(20); //setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setColor(Color.RED);
-            canvas.drawLine(0, 0, getWidth(), getHeight(), paint);
             paint.setStrokeWidth(5); //setStyle(Paint.Style.FILL_AND_STROKE);
             paint.setColor(Color.GREEN);
             if(aroundRect.size()>0) {

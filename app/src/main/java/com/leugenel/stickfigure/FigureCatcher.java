@@ -56,7 +56,6 @@ public class FigureCatcher {
                 if( x>=bitmap.getWidth() || y>=bitmap.getHeight() || x<=0 || y<=0)
                     continue;
                 if(!isTheSameColor(x,y, xPos, yPos)) {
-                    Log.i("isInDimension", "isInDimension YES");
                     return true;
                 }
             }
@@ -72,7 +71,6 @@ public class FigureCatcher {
                 if( x>=bitmap.getWidth() || y>=bitmap.getHeight() || x<=0 || y<=0)
                     continue;
                 if(isTheSameColor(x,y, userColor)) {
-                    Log.i("isInDimension", "isInDimension YES");
                     return true;
                 }
             }
