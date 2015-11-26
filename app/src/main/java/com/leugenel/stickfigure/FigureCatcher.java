@@ -88,6 +88,13 @@ public class FigureCatcher {
         return bitmap.getPixel(x, y) == userColor;
     }
 
+    /***
+     *
+     * @param figColor
+     * @param userColor
+     * @param bitmap
+     * @return
+     */
     public Boolean isDone(int figColor, int userColor, Bitmap bitmap){
         int pixel;
         this.bitmap=bitmap;

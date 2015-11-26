@@ -1,29 +1,25 @@
 package com.leugenel.stickfigure;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +31,11 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
     DrawView drawView;
     RelativeLayout rl;
     FigureCatcher fCatcher;
+    TextView level;
     int actionBarHeight=0;
     float scale =0;
+    int levelCounter=1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,19 +45,20 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         setContentView(R.layout.activity_main);
         drawView = new DrawView(this);
 
-        drawView.setBackgroundResource(R.drawable.line);
-        scale = getResources().getDisplayMetrics().density;
+        level = (TextView) findViewById(R.id.level);
+        level.append(" " + Integer.toString(levelCounter));
 
-        Log.i("onCreate", "scale:" + scale + " horizontal_margin:" +
-                (int) (getResources().getDimension(R.dimen.activity_horizontal_margin)) +
-                "vertical_margin: " + (int) (getResources().getDimension(R.dimen.activity_vertical_margin)));
+
+        drawView.setBackgroundResource(getDynamicDrawableId());
+//        scale = getResources().getDisplayMetrics().density;
 
         RelativeLayout.LayoutParams params =
-                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                                                RelativeLayout.LayoutParams.MATCH_PARENT);
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT /*width*/,
+                         RelativeLayout.LayoutParams.MATCH_PARENT /*height*/);
+
 
         rl = (RelativeLayout)findViewById(R.id.frame);
-        rl.addView(drawView, params);
+        rl.addView(drawView,params);
 
     }
 
@@ -104,6 +104,12 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         }
     }
 
+    /***
+     *
+     *
+     * @param view
+     * @return
+     */
     public static Bitmap getBitmapFromView(ImageView view) {
         //Define a bitmap with the same size as the view
         Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
@@ -124,6 +130,11 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         return returnedBitmap;
     }
 
+    /***
+     *
+     * @param event
+     * @return
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event){
 
@@ -136,24 +147,22 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
             case (MotionEvent.ACTION_MOVE) :
                 Log.i("onTouchEvent", "Action was MOVE");
                 Log.i("onTouchEvent ", "Regular X: " + event.getX() + " Y:" + event.getY());
-                //fCatcher.isCatches(event.getX(), event.getY()-MAGIC_SHIFT);
-                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY()  - MAGIC_SHIFT - actionBarHeight));
+
+                int textHeight = (int)getResources().getDimension(R.dimen.text_level_height)+15;
+                if ((event.getY()- MAGIC_SHIFT - actionBarHeight - textHeight)<0) {
+                    Log.i("onTouchEvent", "On the text view");
+                    return true;
+                }
+                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY() - MAGIC_SHIFT - actionBarHeight));
                 drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
                 Log.i("onTouchEvent", "Action was UP");
-
                 if(fCatcher.isDone(Color.BLUE, Color.GREEN, getBitmapFromView(drawView))){
-//                    new AlertDialog.Builder(MainActivity.this)
-//                            .setTitle("You win")
-//                            .setMessage("Yes you win")
-//                            .setCancelable(true)
-//                            .show();
+                    winAlert();
                     Log.i("onTouchEvent", "YOU WIN!!!");
                 }
-                else {
-                    drawView.aroundRect.clear();
-                }
+                drawView.aroundRect.clear();
                 return true;
             case (MotionEvent.ACTION_CANCEL) :
                 Log.i("onTouchEvent", "Action was CANCEL");
@@ -166,6 +175,59 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
                 return super.onTouchEvent(event);
         }
     }
+
+    /***
+     *
+     */
+    private  void winAlert(){
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage(R.string.windialog_message)
+                .setTitle(R.string.windialog_title);
+        // Add the buttons
+        builder.setPositiveButton(R.string.next, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked Next button
+                Log.i("winAlert", "User clicked Next button");
+                nextLevel();
+
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                System.out.println("User cancelled the dialog");
+            }
+        });
+        // 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+
+        dialog.show();
+    }
+
+    /**
+     *
+     * @return
+     */
+    private int getDynamicDrawableId(){
+        String drawPrefix="f";
+        String drawName = drawPrefix+Integer.toString(levelCounter);
+        return getResources().getIdentifier(drawName, "drawable", getPackageName());
+    }
+
+    /***
+     *
+     */
+    private void nextLevel(){
+        levelCounter++;
+        level.setText(getResources().getString(R.string.Level)+" "+Integer.toString(levelCounter));
+
+        drawView.setBackgroundResource(getDynamicDrawableId());
+        drawView.invalidate();
+
+    }
+
 
     /***************************** Class DrawView **************************/
 

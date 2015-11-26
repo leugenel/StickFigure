@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">StickFigure</string>
     <string name="action_settings">Settings</string>
+    <string name="windialog_message">Please press Next button for the new figure.</string>
+    <string name="windialog_title">YOU WIN!!!</string>
+    <string name="next">Next</string>
+    <string name="cancel">Cancel</string>
+    <string name="Level">Level</string>
 </resources>
