@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
 
 
         rl = (RelativeLayout)findViewById(R.id.frame);
-        rl.addView(drawView,params);
+        rl.addView(drawView, params);
 
     }
 
@@ -153,7 +153,14 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
                     Log.i("onTouchEvent", "On the text view");
                     return true;
                 }
-                drawView.addRect(fCatcher.getAroundRect(event.getX(), event.getY() - MAGIC_SHIFT - actionBarHeight));
+                Rect newRect = fCatcher.getAroundRect(event.getX(), event.getY() - MAGIC_SHIFT - actionBarHeight);
+                if(!drawView.isInsideRectList(newRect)) {
+                    drawView.addRect(newRect);
+                }
+                else{
+                    Log.i("onTouchEvent", "Rectangle inside existing rectangle list");
+                    drawView.aroundRect.clear();
+                }
                 drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_UP) :
@@ -163,6 +170,7 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
                     Log.i("onTouchEvent", "YOU WIN!!!");
                 }
                 drawView.aroundRect.clear();
+                drawView.invalidate();
                 return true;
             case (MotionEvent.ACTION_CANCEL) :
                 Log.i("onTouchEvent", "Action was CANCEL");
@@ -224,7 +232,6 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         level.setText(getResources().getString(R.string.Level)+" "+Integer.toString(levelCounter));
 
         drawView.setBackgroundResource(getDynamicDrawableId());
-        drawView.invalidate();
 
     }
 
@@ -254,6 +261,17 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         public void addRect(Rect rect){
             aroundRect.add(rect);
         }
+
+        public Boolean isInsideRectList(Rect newRect){
+            for (Rect rect : aroundRect) {
+                if(rect.contains(newRect)){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
 
     }
 
