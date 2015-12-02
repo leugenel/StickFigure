@@ -165,9 +165,11 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
                 return true;
             case (MotionEvent.ACTION_UP) :
                 Log.i("onTouchEvent", "Action was UP");
-                if(fCatcher.isDone(Color.BLUE, Color.GREEN, getBitmapFromView(drawView))){
-                    winAlert();
-                    Log.i("onTouchEvent", "YOU WIN!!!");
+                if(drawView.aroundRect.size()!=0) {
+                    if (fCatcher.isDone(Color.BLUE, Color.GREEN, getBitmapFromView(drawView))) {
+                        winAlert();
+                        Log.i("onTouchEvent", "YOU WIN!!!");
+                    }
                 }
                 drawView.aroundRect.clear();
                 drawView.invalidate();
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
      */
     private void nextLevel(){
         levelCounter++;
-        level.setText(getResources().getString(R.string.Level)+" "+Integer.toString(levelCounter));
+        level.setText(getResources().getString(R.string.Level) + " " + Integer.toString(levelCounter));
 
         drawView.setBackgroundResource(getDynamicDrawableId());
 
@@ -263,6 +265,12 @@ public class MainActivity extends AppCompatActivity  /*Activity*/ {
         }
 
         public Boolean isInsideRectList(Rect newRect){
+            int DECREASE_DIMENSION = 5;
+            newRect.bottom=newRect.bottom-DECREASE_DIMENSION;
+            newRect.right=newRect.right-DECREASE_DIMENSION;
+            newRect.top=newRect.top+DECREASE_DIMENSION;
+            newRect.left=newRect.left+DECREASE_DIMENSION;
+
             for (Rect rect : aroundRect) {
                 if(rect.contains(newRect)){
                     return true;
